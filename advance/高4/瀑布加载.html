@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <meta charset="utf-8">
+  <title>木桶加载</title>
+</head>
+<style>
+  ul,li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  }
+  .container {
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #ccc;
+  }
+  .pic-ct {
+    height: 500px;
+  }
+  .item {
+    position: absolute;
+    border: 1px solid #ccc;
+    width: 280px;
+    transition: all .8s;
+    margin: 10px;
+  }
+  .item img {
+    width: 260px;
+    margin: 10px;
+  }
+  .item h4 {
+    margin: 0 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  .item p {
+    margin: 10px;
+  }
+  #load {
+    position: relative;
+    bottom: 5px;
+    visibility: hidden;
+  }
+</style>
+<body>
+  <div class="container">
+    <ul class="pic-ct">
+      <li class="item">
+        <img src="http://n.sinaimg.cn/tech/transform/20170803/hgaa-fyitapp0108609.jpg" alt="">
+        <h4>巨鳄和鲨鱼水中抢食决斗抢食</h4>
+        <p>
+          澳大利亚两名男子将鱼肉抛向海中，以此来吸引大鱼。令他们意外的是，
+          这竟然引起了一条鳄鱼和一头鲨鱼的激烈决斗。
+        </p>
+      </li>
+    </ul>
+    <div id="load">锚点</div>
+  </div>
+  <script>
+    var col = [];
+    var colLength = parseInt($('.container').width() / $('li.item').width());
+    console.log($('.container').width(),$('li.item').width());
+    var islocked = false;
+    //获取新闻页数和新闻数量
+    var pageIndex = 1;
+    var num = 4;
+    //计算容器大小，初始化每一行为0
+    for(var i=0; i<colLength; i++){
+      col[i] = 0;
+    }
+    // 每次结束需要容器的高度必须是CSS设置的
+    // 1.获取数据
+    // 2. 一张图加载完成后创一个DOM,以瀑布流的方式放入
+    // 3.滚动到底部又到第一步
+    getData(function(arrs){
+      $.each(arrs,function(idx,obj){
+        var $li = createHtml(obj);
+        $li.find('img').load(function(){
+          console.log(1);
+          // 瀑布流需要先把元素放入,然后再排位置
+          $('.pic-ct').append($li);
+          warterFallPlace($li);  
+        })  
+      });
+    });
+    // 当窗口滚动触发事件
+    $(window).on('scroll',function(){
+      if(islocked) return ;
+
+      if( isShow($('#load')) ){
+        islocked = true;
+        getData(function(arrs){
+          $.each(arrs,function(idx,obj){
+            var $li = createHtml(obj);
+            $li.find('img').load(function(){
+              $('.pic-ct').append($li);
+              warterFallPlace($li);  
+          });
+        });
+          islocked = false;
+        });
+      }
+    });
+    // jsonp获取数据,然后页数加一
+    function getData(add){
+      $.ajax({
+        url: 'http://platform.sina.com.cn/slide/album_tech',
+        dataType: 'jsonp',  
+        jsonp:"jsoncallback",
+        data: {
+          app_key: '1271687855',
+          num: num,
+          page: pageIndex
+        }
+      }).done(function(msg) {
+        if(msg){
+          add(msg.data);
+        }
+        console.log(msg.data);
+        pageIndex++;
+      });
+    }
+    // 判断锚点是否出现
+    function isShow($node){
+      var windowHeight = $(window).height();
+      var scrollTop = $(window).scrollTop();
+      var offSetTop= $node.offset().top;
+      if(scrollTop + windowHeight > offSetTop){
+        return true;
+      }
+      return false;
+    }
+    // 创建dom
+    function createHtml(obj){
+      var html = '';
+      html += '<li class="item">';
+      html += '<img src="' + obj.img_url + '">';
+      html += '<h4>' + obj.short_name + '</h4>';
+      html += '<p>' + obj.short_intro + '</p>';
+      return $(html);
+    }
+    // 将通过瀑布流的方式放入
+    function warterFallPlace($node){
+      // 首先先获取数组最小的高度.然后再获取到坐标. 
+      // css定位为top为数组的高度.left为坐标*本身的outerWidth(true)的宽度
+      var minVal = Math.min.apply(null,col);
+      var minIndex = col.indexOf(minVal);
+      $node.css({
+        top: minVal,
+        left: minIndex * $node.outerWidth(true)
+      })
+      console.log($node.outerWidth(true));
+      col[minIndex] += $node.outerHeight(true);
+      var maxVal = Math.max.apply(null,col);
+      $('.pic-ct').height(maxVal);
+    }
+  </script>
+
+</body>
+</html>

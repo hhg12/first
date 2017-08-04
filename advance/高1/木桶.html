@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <meta charset="utf-8">
+  <title>木桶</title>
+  <style>
+    .imgShow {
+      width: 1000px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="imgShow">
+
+  </div>
+  <script>
+    function Barrle($ct){
+      this.$ct = $ct;
+      this.baseHeight = 100;     //开始时的高度
+      this.num = 40;
+      this.rawList = [];         //存放图片信息
+      this.loadImg();
+    }
+
+    Barrle.prototype = {
+      loadImg: function(){
+        var _this = this;
+        var imgs = this.getImgs(this.num);
+        
+        $.each(imgs,function(idx,url){
+          var img = new Image();
+          img.src = imgs[idx];
+          img.onload =function(){           //注意要等图片加载完，才有宽度
+            var imgInfo = {
+              target: img,
+              width: (img.width / img.height) * _this.baseHeight,
+              height: _this.baseHeight
+            }
+            _this.render(imgInfo);
+          }
+        })
+      },
+      //很关键的一步，计算图片每一行的宽度，当加了一个图片后，rowLenght大于最大宽度时，
+      //去掉最后的图片，将前面的图片按比例拉伸，以占满一行，然后加载到容器内。
+      render: function(imgInfo){
+        //var containerWidth = this.$ct.width();    
+        var maxLength = this.$ct.width();    //一行的 宽度
+        var rowLength = 0;
+        var rowHeight = this.baseHeight;
+        this.rawList.push(imgInfo);
+        for(var i=0; i<this.rawList.length; i++){
+          rowLength += this.rawList[i].width;
+        }
+        console.log(rowLength);
+        if(rowLength > maxLength){
+          this.rawList.pop();
+          rowLength = rowLength - imgInfo.width;
+          rowHeight = (this.baseHeight / rowLength) * maxLength;
+          this.layout(rowHeight);
+          this.rawList = [];
+          this.rawList.push(imgInfo);
+        }
+      },
+      //将rawList中的图片按一定的高度加载到页面中
+      layout: function(rowHeight){
+        $rowDiv = $('<div class="row"></div>');
+        $.each(this.rawList,function(idx,imgInfo){
+          $img = $(imgInfo.target);
+          $img.height(rowHeight);
+          $rowDiv.append($img);
+        })
+        this.$ct.append($rowDiv);
+      },
+      //从网站上获取图片
+      getImgs: function(num){            
+        var color, width, height, imgs = [];
+        for(var i=0; i<num; i++){
+          color = Math.random().toString(16).substring(2,8);
+          width = Math.floor(Math.random()*100+50);
+          height = Math.floor(Math.random()*30+50);
+          imgs.push('http://placehold.it/'+width+'x'+height+'/'+color+'/fff');
+        }
+        return imgs;
+      }
+
+    }
+    new Barrle($('.imgShow'));
+  </script>
+</body>
+</html>
