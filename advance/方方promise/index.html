@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>异步demo</title>
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
+</head>
+<body>
+用户：<span id="user"></span>
+<hr>
+分组：<span id="group"></span>
+<hr>
+其中第一个群含有：<span id="groupMember"></span>
+<form action="./user.json" method="post">
+  <input type="text" placeholder="username">
+  <input type="password" placeholder="password">
+  <input type="submit" value="提交">
+</form>
+<script src="./login.js"></script>
+</body>
+</html>
