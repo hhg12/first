@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    html,body,.menu{
+      height: 100%;
+      margin: 0;
+    }
+    .menu {
+      background: #333;
+      color: #fff;
+      line-height: 1.5;
+      width: 200px;
+      float: left;
+    }
+    .menu a {
+      color: #ccc;
+      text-decoration: none;
+    }
+    .main {
+      margin-left: 210px;
+    }
+    .tree,
+    .tree ul,
+    .tree li {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .tree li{
+      padding-left: 2em;
+    }
+    .tree>li {
+      padding-top: 20px;
+    }
+    .tree{
+      padding-bottom: 20px;
+    }
+
+    .tree span:before {
+      content: '-';
+      display: inline-block;
+      margin-right: 10px;
+    }
+    .tree .haschild>span:before {
+      content:'+';
+    }
+    .tree .haschild.open>span:before {
+      content: '-';
+      
+    }
+    .tree .haschild>ul {
+      display: none;
+    }
+    .tree .open>ul {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="menu" data-menu="{}">
+    <!-- <ul class="tree">
+      <li class="haschild open">
+        <span>课程</span>
+        <ul>
+          <li>
+            <span>后端</span>
+          </li>
+          <li>
+            <span>前端</span>
+            <ul>
+              <li>
+                <span>必修班</span>
+              </li>
+              <li>
+                <span>任务班</span>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <span>文章</span>
+        <ul>
+          <li>
+            <span>技术</span>
+          </li>
+          <li>
+            <span>灌水</span>
+          </li>
+        </ul>
+      </li>
+    </ul> -->
+  </div>
+
+
+  <script src="./node_modules/jquery/dist/jquery.min.js"></script>
+  <script>
+    // console.log($)
+
+    var treeData = [
+      {
+        name: "课程",
+        children: [
+          {
+            name: "后端",
+            path: '#'
+          },
+          {
+            name: "前端",
+            children: [
+              {
+                name: "必修班",
+                path: "#"
+              },
+              {
+                name: "任务班",
+                path: "#"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name: "文章",
+        children: [
+          {
+            name: "技术",
+            path: "#"
+          },
+          {
+            name: "灌水",
+            path: "#"
+          }
+        ]
+      }
+    ]
+ 
+    
+    
+      $.fn.tree = function(treeData){
+        var $node = $('<ul class="tree"><ul>')
+        createNode($node,treeData)
+        this.append($node)
+
+        function createNode($node,data){
+          $.each(data,function(index,data){
+            var $li = $('<li></li>')
+            var $title = $('<span></span>')
+
+            if(data.path){
+              $title.append('<a href="'+data.path+'">'+data.name+'</a>')
+            }else{
+              $title.append(data.name)
+              $li.addClass('haschild')
+            }
+            $li.append($title)
+
+            if(data.children){
+              var $ul = $('<ul></ul>')
+              createNode($ul,data.children)
+              $li.append($ul)
+            }
+            $node.append($li)
+          })
+        }
+        this.on('click','span',function(){
+          $title = $(this)
+          $li = $title.parent()
+          if($li.hasClass('haschild')){
+            $li.toggleClass('open')
+          }
+        })
+      }  
+
+
+
+    $('.menu').tree(treeData)
+
+    // 添加插件
+    // $.fn.hello = function(){
+    //   this.addClass('hello')
+    // }
+    // $('.menu').hello()
+  </script>
+</body>
+</html>
